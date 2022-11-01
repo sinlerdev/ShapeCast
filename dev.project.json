@@ -1,0 +1,17 @@
+{
+    "name": "ShapeCast-dev",
+    "tree" : {
+        "$className": "DataModel",
+
+        "ServerScriptService" : {
+            "Benchmarks" : {
+                "$path" : "benchmarks"
+            }
+        },
+        "ReplicatedStorage" : {
+            "ShapeCast" : {
+                "$path" : "src"
+            }
+        }
+    }
+}
