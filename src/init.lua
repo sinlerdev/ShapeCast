@@ -34,7 +34,7 @@ local function findNumOfIterationFromAdvancement(advancement: number)
 	return finalNum
 end
 
-local function createShape(config: ShapeConfig)
+local function createShape(config: ShapeConfig) : Shape
 	local numOfPlanes = #config.Steps
 	local stepInfo = table.create(numOfPlanes) :: { set<set<Vector3>> }
 	local planeInfo = table.create(numOfPlanes) :: {set<Vector3>}
@@ -61,7 +61,7 @@ local function createShape(config: ShapeConfig)
 				local numOfIterations = findNumOfIterationFromAdvancement(PointAdvancement)
 				local step = table.create(numOfIterations)
 
-				numOfPoints ++ numOfIterations
+				numOfPoints += numOfIterations
 				for i = PointAdvancement, 1, PointAdvancement do
 					local I = i
 
