@@ -37,7 +37,7 @@ end
 local function createShape(config: ShapeConfig)
 	local numOfPlanes = #config.Steps
 	local stepInfo = table.create(numOfPlanes) :: { set<set<Vector3>> }
-	local planeInfo = table.create(numOfPlanes)
+	local planeInfo = table.create(numOfPlanes) :: {set<Vector3>}
 	local lastPointVector = Vector3.zero
 	local lastPlaneVector = Vector3.zero
 	
