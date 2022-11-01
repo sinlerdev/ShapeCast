@@ -10,6 +10,7 @@ type set<T> = { T }
 type Shape = {
 	StepInfo: { set<set<Vector3>> },
 	PlaneInfo: { set<Vector3> },
+	Rays: {RaycastResult}
 }
 
 local resolveDirections = require(script.resolveDirections)
@@ -23,18 +24,32 @@ local visualizer = require(script.Visualizer).new({
 
 visualizer:PrepareLines(100 * 16)
 
+local function findNumOfIterationFromAdvancement(advancement: number)
+	local finalNum = 0 
+
+	for i = advancement, 1, advancement do 
+		finalNum += 1
+	end 
+
+	return finalNum
+end
+
 local function createShape(config: ShapeConfig)
 	local numOfPlanes = #config.Steps
 	local stepInfo = table.create(numOfPlanes) :: { set<set<Vector3>> }
-	local planeInfo = {}
+	local planeInfo = table.create(numOfPlanes)
 	local lastPointVector = Vector3.zero
 	local lastPlaneVector = Vector3.zero
 	
+	local PlaneAdvancement = config.PlaneAdvancement
+	local PointAdvancement = config.PointAdvancement
+
+	local numOfPoints = 0
 	for _, plane in config.Steps do
 		local computedSteps = table.create(#plane)
 
-		local planeGroup = {}
-		for i = config.PlaneAdvancement, 1, config.PlaneAdvancement do
+		local planeGroup = table.create(findNumOfIterationFromAdvancement(PlaneAdvancement))
+		for i = PlaneAdvancement, 1, PlaneAdvancement do
 			local I = i
 			
 			table.insert(planeGroup, lastPlaneVector + Vector3.new(I, I, I))
@@ -43,9 +58,11 @@ local function createShape(config: ShapeConfig)
 		lastPlaneVector += Vector3.one
 		for _, isStepIncluded in plane do
 			if isStepIncluded then
-				local step = {}
+				local numOfIterations = findNumOfIterationFromAdvancement(PointAdvancement)
+				local step = table.create(numOfIterations)
 
-				for i = config.PointAdvancement, 1, config.PointAdvancement do
+				numOfPoints ++ numOfIterations
+				for i = PointAdvancement, 1, PointAdvancement do
 					local I = i
 
 					table.insert(step, lastPointVector + Vector3.new(I, I, I))
@@ -63,6 +80,7 @@ local function createShape(config: ShapeConfig)
 	return {
 		StepInfo = stepInfo,
 		PlaneInfo = planeInfo,
+		Rays = table.create(numOfPoints)
 	} :: Shape
 end
 
@@ -74,6 +92,9 @@ local function castShape(shape: Shape, Position: Vector3, direction: Vector3, sh
 
 	local resolvedUp = resolveDirections(cframe.UpVector)
 	local resolvedRight = resolveDirections(cframe.RightVector)
+
+	local hit = shape.Rays
+	table.clear(hit)
 	for planeIndex, planeSteps in stepInfo do
 		local chosenPlane = planeInfo[planeIndex]
 
@@ -84,8 +105,11 @@ local function castShape(shape: Shape, Position: Vector3, direction: Vector3, sh
 				for _, Point in Step do
 					local right = resolvedRight * Point
 
-					workspace:Raycast(Position + (right + up), direction)
+					local result = workspace:Raycast(Position + (right + up), direction)
 
+					if result then
+						table.insert(hit, result)
+					end
 					if shouldDebug then
 						visualizer:castRay(Position + (right + up), direction)
 					end
@@ -93,6 +117,8 @@ local function castShape(shape: Shape, Position: Vector3, direction: Vector3, sh
 			end
 		end
 	end
+
+	return hit
 end
 
 return {
