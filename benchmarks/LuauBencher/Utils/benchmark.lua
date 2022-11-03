@@ -7,6 +7,8 @@ end
 local function benchmark(calls: number, preRun: () -> (any), run: (any) -> (), postRun: () -> ())
 	local rawBenchmark = table.create(calls)
 
+	local timeTaken = 0
+
 	for _ = 1, calls do
 		local preParams = preRun()
 		local timeStart = os.clock()
@@ -15,6 +17,12 @@ local function benchmark(calls: number, preRun: () -> (any), run: (any) -> (), p
 		postRun()
 
 		table.insert(rawBenchmark, timeEnd - timeStart)
+		timeTaken += timeEnd - timeStart
+
+		if timeTaken >= 8 then
+			task.wait()
+			timeTaken = 0
+		end
 	end
 
 	table.sort(rawBenchmark)

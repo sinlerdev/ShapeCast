@@ -10,7 +10,7 @@ local function readDir(dir: Instance)
 
 			for _, benchSection in requiredFile do
 				fileSections[benchSection.name] =
-					benchmark(benchSection.calls, benchSection.preRun, benchSection.run, benchSection.postRun)()
+					benchmark(benchSection.calls, benchSection.preRun or function() end, benchSection.run, benchSection.postRun or function() end)()
 			end
 
 			serDir[dirFile.Name] = fileSections

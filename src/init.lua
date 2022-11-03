@@ -41,14 +41,16 @@ local function createShape(config: ShapeConfig) : Shape
 	local lastPointVector = Vector3.zero
 	local lastPlaneVector = Vector3.zero
 	
-	local PlaneAdvancement = config.PlaneAdvancement
-	local PointAdvancement = config.PointAdvancement
+	local PlaneAdvancement = config.PlaneAdvancement or 1
+	local PointAdvancement = config.PointAdvancement or 1
 
+	local planeAdvancementIterations = findNumOfIterationFromAdvancement(PlaneAdvancement)
+	local pointAdvancementIterations = findNumOfIterationFromAdvancement(PointAdvancement)
 	local numOfPoints = 0
 	for _, plane in config.Steps do
 		local computedSteps = table.create(#plane)
 
-		local planeGroup = table.create(findNumOfIterationFromAdvancement(PlaneAdvancement))
+		local planeGroup = table.create(planeAdvancementIterations)
 		for i = PlaneAdvancement, 1, PlaneAdvancement do
 			local I = i
 			
@@ -58,10 +60,9 @@ local function createShape(config: ShapeConfig) : Shape
 		lastPlaneVector += Vector3.one
 		for _, isStepIncluded in plane do
 			if isStepIncluded then
-				local numOfIterations = findNumOfIterationFromAdvancement(PointAdvancement)
-				local step = table.create(numOfIterations)
+				local step = table.create(pointAdvancementIterations)
 
-				numOfPoints += numOfIterations
+				numOfPoints += pointAdvancementIterations
 				for i = PointAdvancement, 1, PointAdvancement do
 					local I = i
 
