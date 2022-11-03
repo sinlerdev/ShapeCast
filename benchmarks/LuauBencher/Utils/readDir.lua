@@ -9,8 +9,13 @@ local function readDir(dir: Instance)
 			local fileSections = {}
 
 			for _, benchSection in requiredFile do
-				fileSections[benchSection.name] =
-					benchmark(benchSection.calls, benchSection.preRun or function() end, benchSection.run, benchSection.postRun or function() end)()
+				fileSections[benchSection.name] = benchmark(
+					benchSection.calls,
+					benchSection.preRun or function() end,
+					benchSection.run,
+					benchSection.postRun or function() end
+				)()
+				task.wait()
 			end
 
 			serDir[dirFile.Name] = fileSections
