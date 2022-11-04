@@ -1,7 +1,7 @@
 --!optimize 2
 local LuauBencher = require(script.Parent.LuauBencher)
 
-local BENCHMARK = true
+local BENCHMARK = false
 
 if BENCHMARK then
     task.wait(5)
