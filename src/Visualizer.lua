@@ -1,12 +1,12 @@
 
-
 type configTypes = {
 	RAY_COLOR: Color3,
 	RAY_WIDTH: number,
 	RAY_NAME: string,
 	FAR_AWAY_CFRAME: CFrame,
-	EXPIRE_AFTER : number
 }
+
+local to_be_cleaned = {}
 
 
 local function createLine(RAY_NAME, RAY_COLOR, RAY_WIDTH, FAR_AWAY_CFRAME, origin)
@@ -35,14 +35,13 @@ function Visualizer.new(config : configTypes)
 		RAY_WIDTH = config.RAY_WIDTH,
 		RAY_NAME = config.RAY_NAME,
 		FAR_AWAY_CFRAME = config.FAR_AWAY_CFRAME,
-		EXPIRE_AFTER = config.EXPIRE_AFTER
 	}, Visualizer)
 		
 	local OriginPart = Instance.new("Part")
 	OriginPart.Name = "ORIGIN_PART"
 	OriginPart.Transparency = 1
-	OriginPart.Orientation = Vector3.new()
-	OriginPart.Position = Vector3.new()
+	OriginPart.Orientation = Vector3.zero
+	OriginPart.Position = Vector3.zero
 	OriginPart.CanCollide = false
 	OriginPart.CanTouch = false
 	OriginPart.CanQuery = false
@@ -51,6 +50,17 @@ function Visualizer.new(config : configTypes)
 	
 	self.origin = OriginPart
 	
+	game:GetService("RunService").RenderStepped:Connect(function()
+		for _, instance in to_be_cleaned do
+			instance.Length = 0		
+			instance.CFrame = self.FAR_AWAY_CFRAME
+	
+			self.InUse[instance] = nil
+			self.InCache[instance] = true
+		end
+	end)
+	
+
 	return self
 end
 
@@ -102,14 +112,8 @@ function Visualizer:castRay(origin : Vector3, direction : Vector3)
 	currentLine.Adornee = PartToUse
 	currentLine.Parent = PartToUse
 	
-	task.delay(self.EXPIRE_AFTER, function()
-		
-		currentLine.Length = 0		
-		currentLine.CFrame = self.FAR_AWAY_CFRAME
-
-		self.InUse[currentLine] = nil
-		self.InCache[currentLine] = true
-	end)
+	table.insert(to_be_cleaned, currentLine
+)
 end
 
 return Visualizer
