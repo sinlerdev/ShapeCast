@@ -18,7 +18,7 @@ local visualizer = require(script.Visualizer).new({
 	RAY_WIDTH = 1,
 	RAY_NAME = "sup",
 	FAR_AWAY_CFRAME = CFrame.new(math.huge, math.huge, math.huge),
-	EXPIRE_AFTER = 1,
+	EXPIRE_AFTER = .5,
 })
 
 visualizer:PrepareLines(100 * 16)
@@ -31,6 +31,9 @@ local function findNumOfIterationFromAdvancement(advancement: number)
 	end
 
 	return finalNum
+end
+local function resolveRelativeVector(Vector: Vector3)
+	return Vector3.new(math.round(Vector.X), math.round(Vector.Y), math.round(Vector.Z))
 end
 
 local function createShape(config: ShapeConfig): Shape
@@ -90,6 +93,7 @@ local function castShape(
 	RaycastParam: RaycastParams,
 	shouldDebug: boolean
 )
+
 	local stepInfo = shape.StepInfo
 	local planeInfo = shape.PlaneInfo
 
@@ -97,8 +101,12 @@ local function castShape(
 
 	local upCframe = cframe.UpVector
 	local rightCframe = cframe.RightVector
-	local resolvedUp = Vector3.new(math.round(upCframe.X), math.round(upCframe.Y), math.round(upCframe.Z))
-	local resolvedRight = Vector3.new(math.round(rightCframe.X), math.round(rightCframe.Y), math.round(rightCframe.Z))
+	local resolvedUp = resolveRelativeVector(upCframe)
+	local resolvedRight = resolveRelativeVector(rightCframe)
+
+	local pivotPosition = Vector3.new(2,2,2)
+	Position -= (resolvedRight * pivotPosition)
+	Position -= (resolvedUp * pivotPosition)
 
 	local hit = shape.Rays
 	table.clear(hit)
@@ -106,25 +114,23 @@ local function castShape(
 	for planeIndex, planeSteps in stepInfo do
 		local chosenPlane = planeInfo[planeIndex]
 
-		local rightTable = table.create(#planeSteps)
-
-		for _, Step in planeSteps do
-			for index, Point in Step do
-				table.insert(rightTable, resolvedRight * Point)
-			end
-		end
-
 		for _, PlaneVector in chosenPlane do
 			local up = resolvedUp * PlaneVector
+			for stepIndex, step in planeSteps do
+				for _, point in step do
+					local right = resolvedRight * point
 
-			for _, rightVector in rightTable do
-				local result = workspace:Raycast(Position + (rightVector + up), direction, RaycastParam)
+					local final = Position + (up + right)
 
-				if result then
-					table.insert(hit, result)
-				end
-				if shouldDebug then
-					visualizer:castRay(Position + (rightVector + up), direction)
+					local result = workspace:Raycast(final, direction)
+
+					if result then
+						table.insert(hit, result)
+					end
+
+					if shouldDebug then
+						visualizer:castRay(final, direction)
+					end
 				end
 			end
 		end
