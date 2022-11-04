@@ -1,5 +1,5 @@
 # ShapeCast
-ShapeCast is an experimental project that is implemented to provide amazing performance packed with a simple interface that follows data-oriented design patterns. 
+ShapeCast is an experimental project that is being worked on to provide amazing performance packed with a simple interface that follows data-oriented design patterns. 
 
 When I finished BoxCast (another library of mine), I found that the code had the potential of providing depth for casters, or in other words, supporting a shape like a sphere; however, due to it being strictly limited to box casting, it wasn't really possible without it feeling a bit out of place. 
 
