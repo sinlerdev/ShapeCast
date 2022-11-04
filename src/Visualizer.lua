@@ -58,6 +58,8 @@ function Visualizer.new(config : configTypes)
 			self.InUse[instance] = nil
 			self.InCache[instance] = true
 		end
+
+		table.clear(to_be_cleaned)
 	end)
 	
 
