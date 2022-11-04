@@ -4,7 +4,7 @@
 /*.rbxm
 
 # others
-sourcemap.json
+/sourcemap.json
 
 # Roblox Studio lock files
 /*.rbxlx.lock
