@@ -11,6 +11,8 @@ type Shape = {
 	StepInfo: { set<set<Vector3>> },
 	PlaneInfo: { set<Vector3> },
 	Rays: { RaycastResult },
+	UpPlacer: Vector3,
+	RightPlacer: Vector3,
 }
 
 local visualizer = require(script.Visualizer).new({
@@ -18,7 +20,7 @@ local visualizer = require(script.Visualizer).new({
 	RAY_WIDTH = 1,
 	RAY_NAME = "sup",
 	FAR_AWAY_CFRAME = CFrame.new(math.huge, math.huge, math.huge),
-	EXPIRE_AFTER = .5,
+	EXPIRE_AFTER = 0.5,
 })
 
 visualizer:PrepareLines(100 * 16)
@@ -36,53 +38,59 @@ local function resolveRelativeVector(Vector: Vector3)
 	return Vector3.new(math.round(Vector.X), math.round(Vector.Y), math.round(Vector.Z))
 end
 
-local function createShape(config: ShapeConfig): Shape
-	local numOfPlanes = #config.Steps
-	local stepInfo = table.create(numOfPlanes) :: { set<set<Vector3>> }
-	local planeInfo = table.create(numOfPlanes) :: { set<Vector3> }
-	local lastPointVector = Vector3.zero
-	local lastPlaneVector = Vector3.zero
+local function _bt_createShape(config: ShapeConfig)
+	local planeAdvancement = config.PlaneAdvancement or 1
+	local pointAdvancement = config.PointAdvancement or 1
+	local pointDistance = config.PointDistance or 1
+	local planeDistance = config.PlaneDistance or 1
 
-	local PlaneAdvancement = config.PlaneAdvancement or 1
-	local PointAdvancement = config.PointAdvancement or 1
+	local iterationsFromPlaneAdvancement = findNumOfIterationFromAdvancement(planeAdvancement)
+	local iterationsFromPointAdvancement = findNumOfIterationFromAdvancement(pointAdvancement)
 
-	local planeAdvancementIterations = findNumOfIterationFromAdvancement(PlaneAdvancement)
-	local pointAdvancementIterations = findNumOfIterationFromAdvancement(PointAdvancement)
-	local numOfPoints = 0
+	local lastPlaneLevelVector = Vector3.zero
+
+	local planeInfo = table.create(#config.Steps)
+	local stepInfo = table.create(#config.Steps)
 	for _, plane in config.Steps do
-		local computedSteps = table.create(#plane)
+		local planeLevels = table.create(iterationsFromPlaneAdvancement)
 
-		local planeGroup = table.create(planeAdvancementIterations)
-		for i = PlaneAdvancement, 1, PlaneAdvancement do
-			local I = i
+		for planeLevelIndex = 1, iterationsFromPlaneAdvancement do
+			local finalProduct = planeLevelIndex * planeDistance
 
-			table.insert(planeGroup, lastPlaneVector + Vector3.new(I, I, I))
+			lastPlaneLevelVector += Vector3.new(finalProduct, finalProduct, finalProduct)
+			table.insert(planeLevels, lastPlaneLevelVector)
 		end
 
-		lastPlaneVector += Vector3.one
-		for _, isStepIncluded in plane do
-			if isStepIncluded then
-				local step = table.create(pointAdvancementIterations)
-				numOfPoints += pointAdvancementIterations
-				for i = PointAdvancement, 1, PointAdvancement do
-					local I = i
+		table.insert(planeInfo, planeLevels)
 
-					table.insert(step, lastPointVector + Vector3.new(I, I, I))
+		local steps = table.create(#plane)
+		local lastStepLevelVector = Vector3.zero
+		for _, isDefinedStep in plane do
+			if isDefinedStep then
+				local stepLevels = table.create(iterationsFromPointAdvancement)
+
+				for stepLevelIndex = 1, iterationsFromPointAdvancement do
+					local finalProduct = stepLevelIndex * pointDistance
+
+					lastStepLevelVector += Vector3.new(finalProduct, finalProduct, finalProduct)
+					table.insert(stepLevels, lastStepLevelVector)
 				end
 
-				table.insert(computedSteps, step)
+				table.insert(steps, stepLevels)
+			else
+				lastStepLevelVector += Vector3.new(pointDistance, pointDistance, pointDistance)
 			end
-			lastPointVector += Vector3.one
 		end
-		lastPointVector = Vector3.zero
-		table.insert(planeInfo, planeGroup)
-		table.insert(stepInfo, computedSteps)
+
+		table.insert(stepInfo, steps)
 	end
 
 	return {
 		StepInfo = stepInfo,
 		PlaneInfo = planeInfo,
-		Rays = table.create(numOfPoints),
+		Rays = {},
+		UpPlacer = Vector3.new(0, 0, 0),
+		RightPlacer = Vector3.new(35, 35, 35),
 	} :: Shape
 end
 
@@ -93,20 +101,16 @@ local function castShape(
 	RaycastParam: RaycastParams,
 	shouldDebug: boolean
 )
-
 	local stepInfo = shape.StepInfo
 	local planeInfo = shape.PlaneInfo
 
 	local cframe = CFrame.lookAt(Position, Position + direction)
 
-	local upCframe = cframe.UpVector
-	local rightCframe = cframe.RightVector
-	local resolvedUp = resolveRelativeVector(upCframe)
-	local resolvedRight = resolveRelativeVector(rightCframe)
+	local resolvedUp = resolveRelativeVector(cframe.UpVector)
+	local resolvedRight = resolveRelativeVector(cframe.RightVector)
 
-	local pivotPosition = Vector3.new(2,2,2)
-	Position -= (resolvedRight * pivotPosition)
-	Position -= (resolvedUp * pivotPosition)
+	Position -= (resolvedRight * shape.RightPlacer)
+	Position -= (resolvedUp * shape.UpPlacer)
 
 	local hit = shape.Rays
 	table.clear(hit)
@@ -140,6 +144,7 @@ local function castShape(
 end
 
 return {
-	createShape = createShape,
+	createShape = _bt_createShape,
 	castShape = castShape,
+	_bt_createShape = _bt_createShape,
 }

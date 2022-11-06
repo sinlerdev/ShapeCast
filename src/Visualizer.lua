@@ -6,8 +6,6 @@ type configTypes = {
 	FAR_AWAY_CFRAME: CFrame,
 }
 
-local to_be_cleaned = {}
-
 
 local function createLine(RAY_NAME, RAY_COLOR, RAY_WIDTH, FAR_AWAY_CFRAME, origin)
 	local line: LineHandleAdornment = Instance.new("LineHandleAdornment")
@@ -49,18 +47,7 @@ function Visualizer.new(config : configTypes)
 	OriginPart.Parent = workspace
 	
 	self.origin = OriginPart
-	
-	game:GetService("RunService").RenderStepped:Connect(function()
-		for _, instance in to_be_cleaned do
-			instance.Length = 0		
-			instance.CFrame = self.FAR_AWAY_CFRAME
-	
-			self.InUse[instance] = nil
-			self.InCache[instance] = true
-		end
 
-		table.clear(to_be_cleaned)
-	end)
 	
 
 	return self
@@ -114,8 +101,13 @@ function Visualizer:castRay(origin : Vector3, direction : Vector3)
 	currentLine.Adornee = PartToUse
 	currentLine.Parent = PartToUse
 	
-	table.insert(to_be_cleaned, currentLine
-)
+	task.delay(0.5, function()
+		currentLine.Length = 0		
+		currentLine.CFrame = self.FAR_AWAY_CFRAME
+
+		self.InUse[currentLine] = nil
+		self.InCache[currentLine] = true
+	end)
 end
 
 return Visualizer

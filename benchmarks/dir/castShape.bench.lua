@@ -11,7 +11,7 @@ return {
 	{
 
 		name = "casting two planes with 4 steps each - 1 for point/plane advancements",
-		calls = 2000,
+		calls = 10_000,
 		preRun = function()
 			return createShape({
 				Steps = {
@@ -26,7 +26,7 @@ return {
 	},
 	{
 		name = "casting two planes with 4 step each - 0.5 for point/plane advancements",
-		calls = 2000,
+		calls = 10_000,
 		preRun = function()
 			return createShape({
 				Steps = {
@@ -43,7 +43,7 @@ return {
 	},
 	{
 		name = "casting two planes with 4 step each - 0.1 for point/plane advancements",
-		calls = 2000,
+		calls = 10_000,
 		preRun = function()
 			return createShape({
 				Steps = {
@@ -61,7 +61,7 @@ return {
 	-- stress test
 	{
 		name = "stress test - casting 5 for planes and points, 0.1 for advancements",
-		calls = 2000,
+		calls = 10_000,
 
 		preRun = function()
 			return createShape({

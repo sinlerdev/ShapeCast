@@ -4,7 +4,7 @@ local LuauBencher = require(script.Parent.LuauBencher)
 local BENCHMARK = false
 
 if BENCHMARK then
-    task.wait(5)
+    task.wait(10)
     print("benchmarking")
     LuauBencher.bootstrapper.run({
         directories = {script.Parent.dir}
