@@ -1,7 +1,7 @@
 --!optimize 2
 local LuauBencher = require(script.Parent.LuauBencher)
 
-local BENCHMARK = false
+local BENCHMARK = true
 
 if BENCHMARK then
     task.wait(10)
@@ -10,3 +10,4 @@ if BENCHMARK then
         directories = {script.Parent.dir}
     })
 end
+
